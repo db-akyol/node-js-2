@@ -6,7 +6,6 @@ class AuditLogs {
   constructor() {
     if (!instance) {
       instance = this;
-
     }
     return instance;
   }

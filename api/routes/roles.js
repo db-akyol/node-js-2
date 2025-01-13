@@ -6,7 +6,11 @@ const Response = require("../lib/Response");
 const CustomError = require('../lib/Error');
 const Enum = require('../config/Enum');
 const role_privileges = require("../config/role_privileges")
+const auth = require("../lib/auth")();
 
+router.all("*", auth.authenticate(), (res, req, next) => {
+  next();
+})
 
 router.get("/", async (req, res) => {
   try {
@@ -23,9 +27,9 @@ router.post("/add", async (req, res) => {
   let body = req.body;
   try {
 
-    if (!body.role_name) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST,"Validation error!","role_name field must be filled")
+    if (!body.role_name) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation error!", "role_name field must be filled")
     if (!body.permissions || !Array.isArray(body.permissions || body.permissions.length == 0)) {
-      throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST,"Validation error!","permissions field must be an array")
+      throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation error!", "permissions field must be an array")
     }
     let role = new Roles({
       role_name: body.role_name,
@@ -54,7 +58,7 @@ router.post("/update", async (req, res) => {
   let body = req.body;
   try {
 
-    if (!body._id) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST,"Validation error!","role_name field must be filled")
+    if (!body._id) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation error!", "role_name field must be filled")
 
     let updates = {}
 
@@ -62,7 +66,7 @@ router.post("/update", async (req, res) => {
     if (typeof body.is_active === "boolean") updates.is_active = body.is_active;
 
     if (body.permissions && !Array.isArray(body.permissions && body.permissions.length > 0)) {
-      let permissions = await RolePrivileges.find({role_id: body._id})
+      let permissions = await RolePrivileges.find({ role_id: body._id })
 
       let removedPermissions = permissions.filter(x => !body.permissions.includes(x.permissions));
       let newPermissons = body.permissions.filter(x => !permissions.map(p => p.permissions).includes(x));
@@ -98,7 +102,7 @@ router.post("/delete", async (req, res) => {
   let body = req.body;
   try {
 
-    if (!body._id) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST,"Validation error!","role_name field must be filled")
+    if (!body._id) throw new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Validation error!", "role_name field must be filled")
 
     await Roles.deleteMany({ _id: body._id });
 
