@@ -3,11 +3,16 @@ const AuditLogs = require("../db/models/AuditLogs");
 const router = express.Router();
 const Response = require("../lib/Response");
 const moment = require("moment");
+const auth = require("../lib/auth")();
 
-router.post("/", async (req, res, next) => {
+router.all("*", auth.authenticate(), (res, req, next) => {
+  next();
+})
+
+router.post("/", async (req, res) => {
 
   try {
-    
+
     let body = req.body
     let query = {};
     let skip = body.skip;
@@ -25,7 +30,7 @@ router.post("/", async (req, res, next) => {
       query.created_at = {
         $gte: moment(body.begin_date),
         $lte: moment(body.end_date)
-         }
+      }
     } else {
       query.created_at = {
         $gte: moment().subtract(1, "day").startOf("day"),
